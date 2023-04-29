@@ -1,0 +1,125 @@
+# SVM kernel functions
+def linear_kernel(x1, x2):
+    return np.dot(x1, x2)
+
+def quadratic_kernel(x1, x2):
+    return (np.dot(x1, x2) ** 2)
+
+def rbf_kernel(x1, x2, gamma=0.1):
+    return np.exp(-gamma * np.linalg.norm(x1 - x2) ** 2)
+
+# SVM classifier
+class SVM:
+    def __init__(self, kernel=linear_kernel, C=1):
+        self.kernel=kernel
+        self.C=C
+    
+    def fit(self, X, y):
+        # y = y.reshape(-1, 1)
+        print(X.shape)
+        print(y.shape)
+        n_samples, n_features = X.shape
+        # Quadratic solver equation:
+        # minimize : 1/2*alphaT*alpha*P + qT*alpha
+        # subject to G*alpha <= h and A*alpha=b
+        
+        # In our case:
+        # minimize: 1/2*alpha_T*alpha*Yi*Yj*Xi*Xj + [-1]*alpha
+        # subject to alpha_i >= 0 ([-1]*alpha >= 0) and Sum of alpha_i*y_i = 0 (i.e. y*alpha = 0)
+        
+        # Calculating Xi*Xj
+        K = np.zeros((n_samples, n_samples))
+        for i in range(n_samples):
+            for j in range(n_samples):
+                K[i,j] = self.kernel(X[i], X[j])
+
+        # Solve the dual optimization problem
+        # calculating Yi*Yj*Xi*Xj
+        P = matrix(np.outer(y,y) * K)
+        print("P: ",P.size)
+        # matrix q for calculating qT*alpha => which is summation of alpha_i in our dual problem
+        q = matrix(-1 * np.ones(n_samples))
+        print("q: ",q.size)
+        
+        # matrix of size 2*n_samples x n_samples that corresponds to the constraints -alpha_i <= 0 and 0 <= alpha_i <= C
+        # we want to create a constraint such that the values of alpha are non-negative. 
+        # This can be achieved by multiplying the alpha values by -1 and stacking an identity matrix with the same size as alpha below it.
+        G = matrix(np.vstack((np.eye(n_samples)*-1,np.eye(n_samples))))
+        print("G: ",G.size)
+        # a vector of size 2n_samples x 1 that corresponds to the vector of constants in the inequality constraints.
+        # The first n_samples elements are set to 0, which corresponds to the lower bound of the constraint 0 <= alpha_i <= C. 
+        # The next n_samples elements are set to C, which corresponds to the upper bound of the constraint 0 <= alpha_i <= C.
+        h = matrix(np.hstack((np.zeros(n_samples), np.ones(n_samples) * self.C)))
+        print("h: ",h.size)
+        
+        # a matrix of size 1 x n_samples that corresponds to the constraint y^T*alpha = 0. (or Summation of (y_i*alpha_i) = 0)
+        # A = matrix(y, (1,n_samples))
+        A = matrix(y.reshape(1, -1), tc='d')
+        print("A: ",A.size)
+        # a scalar that corresponds to the constant in the equality constraint. 
+        # It is set to 0.0, since the constraint is y^T*alpha = 0.
+        b = matrix(0.0)
+
+        # Run solver
+        sol = solvers.qp(P, q, G, h, A, b)
+        alpha = np.array(sol['x']).reshape(n_samples)
+
+        # Get support vectors
+        # the optimal value of the alpha coefficients for non-support vectors should be 0. 
+        # However, due to numerical errors in the optimization process, these values may be slightly greater than 0.
+        # indices of all alphas greater than 1e-5 (~0)
+        sv_idx = alpha > 1e-5
+        self.support_vectors = X[sv_idx]
+        self.support_vector_labels = y[sv_idx]
+        self.support_vector_weights = alpha[sv_idx]
+
+        # Calculate intercept
+        # self.intercept = np.mean(self.support_vector_labels - np.sum(self.support_vector_weights * self.support_vector_labels * K[sv_idx], axis=1))
+        self.intercept = np.mean(self.support_vector_labels - np.sum(self.support_vector_weights * self.support_vector_labels * K[sv_idx][:, sv_idx], axis=1))
+
+    # def predict(self, X):
+    #     y_pred = []
+    #     for sample in X:
+    #         prediction = 0
+    #         for i in range(len(self.support_vectors)):
+    #             prediction += self.support_vector_weights[i] * self.support_vector_labels[i] * self.kernel(sample, self.support_vectors[i])
+    #         prediction += self.intercept
+    #         y_pred.append(np.sign(prediction))
+    #     return np.array(y_pred)
+    def predict(self, X):
+        if self.kernel == 'linear':
+            return np.sign(np.dot(X, self.w) + self.b)
+        else:
+            n_samples = X.shape[0]
+            y_pred = np.zeros(n_samples)
+            for i in range(n_samples):
+                kernel_sum = 0
+                for j in range(len(self.support_vectors)):
+                    kernel_sum += self.support_vector_weights[j] * self.support_vector_labels[j] * self.kernel(X[i], self.support_vectors[j])
+                y_pred[i] = kernel_sum + self.intercept
+            return np.sign(y_pred)
+            
+            
+=====================================================================================
+
+# Defining hyperparams
+C_values = [1]
+kernels = [('Linear', linear_kernel)]
+# kernels = [('Linear', linear_kernel), ('Quadratic', quadratic_kernel), ('RBF', rbf_kernel)]
+results = []
+
+======================================================================================
+
+# Train for each kernel function for each C value to record best accuracy among them
+for kernel_name, kernel_func in kernels:
+    for C in C_values:
+        svm = SVM(kernel=kernel_func, C=C)
+        svm.fit(X_train, y_train)
+        train_acc = np.mean(np.equal(svm.predict(X_train), y_train))
+        test_acc = np.mean(np.equal(svm.predict(X_test), y_test))
+        # test_acc = np.mean(svm.predict(X_test) == y_test)
+        results.append({'kernel': kernel_name, 'C': C, 'train_acc': train_acc, 'test_acc': test_acc})
+
+# Print the results
+for result in results:
+    print('Kernel: {}, C: {}, Train accuracy: {:.3f}, Test accuracy: {:.3f}'.format(result['kernel'], result['C'], result['train_acc'], result['test_acc']))
