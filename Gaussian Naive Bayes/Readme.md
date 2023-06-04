@@ -1,20 +1,42 @@
-# Polydipsia Prediction using Gaussian Naive Bayes Classifier Learning Model
+# Polydipsia Prediction
 
-## Operation performed
+## Problem statement
 
-1. Data splitting (k-fold cross validation)
-2. Training and testing of model
-3. Confusion matrix and score calculation
-4. Feature transformation using various functions
-5. Training and testing of model on transformed data
-6. Confusion matrix and score calculation on transformed data
-7. Comparison of scores of both the models
+The model will take the various diagnostic results (like hormone level, blood pressure etc.) and patient's conditions (like age, BMI, lineage factor) as input features and predict whether she has polydipsia. The model will be trained using **Gaussian Naive Bayes Classifier** algorithm. 
+
+## Dataset
+
+Dataset contains 768 rows and 8 columns. Dataset can be found [here](/Gaussian%20Naive%20Bayes/polydipsia.csv)
+
+Features are:
+
+`'Pregnancies', 'BloodPressure', 'HormoneLevel', HumulinLevel', 'BMI', 'Age', 'LineageFactor', 'Prediction'`
+
+## Code walkthrough
+
+1. Importing libraries
+2. Reading dataset
+3. Data analysis
+    - Checking for null values
+    - Correlation matrix
+    - Distribution of features
+4. Model building
+    - Class for `Gaussian Naive Bayes Classifier` with functions for training and testing
+5. k-fold validation
+6. Training and testing of model
+7. Confusion matrix and score calculation
+8. Feature transformation using various functions
+    - skewness identificaion
+    - log(1+x) transformation
+    - Quadratic transformation
+9. Training and testing of model on transformed data
+10. Comparing with `sklearn` library function
 
 ## Steps to run the code
 
-1. Open the terminal and navigate to the folder where the code is present.
-2. Open the file named `Polydipsia Prediction.ipynb` using Jupyter Notebook.
-3. Run the code cell by cell.
+1. Install Jupyter Notebook or use Google Colab.
+2. Open the file `Gaussian Naive Bayes.ipynb` in Jupyter Notebook or Google Colab.
+3. Run all the cells to perform data analysis, cleaning, model building and testing.
 
 ## Libraries used
 
@@ -22,5 +44,7 @@
 2. Numpy
 3. Matplotlib
 4. Seaborn
-5. Scikit-learn (To compare with library model)
+5. Scikit-learn (To compare our model with library function)
 6. math
+
+*Detailed report can be found [here](/Gaussian%20Naive%20Bayes/Polydipsia%20Prediction%20using%20Gaussian%20Naive%20Bayes%20Classifier%20Learning%20Model%20-%20Report.pdf)*

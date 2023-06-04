@@ -13,32 +13,38 @@ Use SVM to classify emails into spam or non-spam categories and report the class
 
 *[More info](http://www.ics.uci.edu/~mlearn/MLRepository.html)*
 
-## Tasks performed
+## Code walkthrough
 
-1. Data pre-processing:
-    
-    a. Null checking
-    
-    b. Class symbol conversion (1,-1)
-    
-    c. Train-Test split (70:30)
-    
-    d. Normalize based on mean and variance of train split
-    
-2. Model building:
+1. Importing libraries
+2. Reading dataset and preprocessing
+    - Null checking
+    - Class symbol conversion (1,-1)
+    - Train-Test split (70:30)
+    - Normalize based on mean and variance of train split
+3. Model building
+    - Class for `SVM` with functions for training and testing
+    - params: kernel function (linear, poly, RBF) , soft margin constant
+    - methods:
+        - `fit(X,y)` : Solves dual equation of SVM and stores weights and bias of separator
+        - `project(X)` : To project data points using obtained weights and bias
+        - `predict(X)` : Sign function to specify class label
+4. Model training and testing
+5. Comparing with `sklearn` library function
+6. Visualizing decision boundaries by performing PCA on data
 
-    a. params: kernel function (linear, poly, RBF) , soft margin constant
+## Steps to run the code
 
-    b. methods:<br>
-        i. `fit(X,y)` : Solves dual equation of SVM and stores weights and bias of separator<br>
-        ii. `project(X)` : To project data points using obtained weights and bias<br>
-        iii. `predict(X)` : Sign function to specify class label
+1. Install Jupyter Notebook or use Google Colab.
+2. Open the file `ML_Assignment_2.ipynb` in Jupyter Notebook or Google Colab.
+3. Run all the cells.
 
-3. Comparison with SVM defined in scikit-learn module
+## Libraries used:
 
-4. Hyper-parameter tuning
-
-5. Visualization: Plotting decision boundary
+- pandas
+- numpy
+- matplotlib
+- sklearn
+- seaborn
 
 ## Results (Accuracies)
 
